@@ -18,23 +18,66 @@
 <script type='text/babel'>
 const {render} = ReactDOM
 const {Component} = React
-const {Link, HashRouter, Switch} = ReactRouterDOM
+const {Link, HashRouter, Switch, Route, Redirect} = ReactRouterDOM
 
-const App = () => {
-    return(
-        <HashRouter>
-            <nav>
-                <Link to ='/companies'>Companies</Link>
-                <Link to ='/products'>Products</Link>
-            </nav>
-        </HashRouter>
-    )
-    
+const Companies = ({companies}) => {
+    return (
+        <ul>
+            {
+                companies.map(company => 
+                    <li>{company.name}</li>
+                )
+            }
+        </ul>
+    );
+};
+const Products = () => <div>Products</div>;
+
+class App extends Component {
+    constructor() {
+        super();
+        this.state = {
+            companies: [],
+            products: []
+        };
+    }
+
+    componentDidMount() {
+        const url = 'https://acme-users-api-rev.herokuapp.com/api';
+        axios.all([
+            axios.get(`${url}/companies`),
+            axios.get(`${url}/products`)
+        ]).then(
+            axios.spread((companies, products) => {
+                this.setState({
+                    companies: companies.data,
+                    products: products.data
+                });
+            })
+        );
+    }
+
+    render() {
+        const { companies, products } = this.state;
+
+        return(
+            <HashRouter>
+                <nav>
+                    <Link to ='/companies'>Companies ({companies.length})</Link>
+                    <Link to ='/products'>Products ({products.length})</Link>
+                </nav>
+                <Switch>
+                    <Route path="/companies" render={ () => <Companies companies={companies}/> } />
+                    <Route path="/products" component={ Products } />
+                    <Redirect to="/companies" />
+                </Switch>
+            </HashRouter>
+        )
+    }
 }
 
 const root = document.querySelector('#root');
 render(<App />, root);
-    
     
 </script>   
 </body>
