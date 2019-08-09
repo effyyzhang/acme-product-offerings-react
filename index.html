@@ -20,12 +20,23 @@ const {render} = ReactDOM
 const {Component} = React
 const {Link, HashRouter, Switch, Route, Redirect} = ReactRouterDOM
 
-const Companies = ({companies}) => {
+const Companies = ({companies, offerings, products}) => {
     return (
         <ul>
             {
-                companies.map(company => 
-                    <li>{company.name}</li>
+                companies.map(company =>
+                <li>
+                    <h2>{company.name}</h2>
+                    <p>{company.catchPhrase}</p>
+                    <p>Offerings:<ul>{
+                        offerings
+                        .filter(offering =>(offering.companyId === company.id))
+                        .map(offering =>
+                            <li> {products.find(product => (offering.productId === product.id)).name} {offering.price}
+                            </li>
+                            )
+                    }</ul></p>
+                </li>
                 )
             }
         </ul>
@@ -38,7 +49,8 @@ class App extends Component {
         super();
         this.state = {
             companies: [],
-            products: []
+            products: [],
+            offerings: []
         };
     }
 
@@ -46,19 +58,22 @@ class App extends Component {
         const url = 'https://acme-users-api-rev.herokuapp.com/api';
         axios.all([
             axios.get(`${url}/companies`),
-            axios.get(`${url}/products`)
+            axios.get(`${url}/products`),
+            axios.get(`${url}/offerings`)
         ]).then(
-            axios.spread((companies, products) => {
+            axios.spread((companies, products, offerings) => {
                 this.setState({
                     companies: companies.data,
-                    products: products.data
+                    products: products.data,
+                    offerings: offerings.data
+
                 });
             })
         );
     }
 
     render() {
-        const { companies, products } = this.state;
+        const { companies, products, offerings } = this.state;
 
         return(
             <HashRouter>
@@ -67,7 +82,7 @@ class App extends Component {
                     <Link to ='/products'>Products ({products.length})</Link>
                 </nav>
                 <Switch>
-                    <Route path="/companies" render={ () => <Companies companies={companies}/> } />
+                    <Route path="/companies" render={ () => <Companies companies={companies} offerings={offerings} products={products}/> } />
                     <Route path="/products" component={ Products } />
                     <Redirect to="/companies" />
                 </Switch>
@@ -78,7 +93,7 @@ class App extends Component {
 
 const root = document.querySelector('#root');
 render(<App />, root);
-    
-</script>   
+
+</script>
 </body>
 </html>
