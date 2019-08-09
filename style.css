@@ -1,0 +1,8 @@
+body {
+  font-family: 'Work Sans', sans-serif;
+}
+
+.selected {
+  background-color: tomato;
+  color: white;
+}

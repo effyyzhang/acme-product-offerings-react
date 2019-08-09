@@ -9,6 +9,8 @@
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-router-dom/5.0.1/react-router-dom.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.js"></script>
     <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     <title>Document</title>
 </head>
 <body>
@@ -18,7 +20,7 @@
 <script type='text/babel'>
 const {render} = ReactDOM
 const {Component} = React
-const {Link, HashRouter, Switch, Route, Redirect} = ReactRouterDOM
+const {NavLink, HashRouter, Switch, Route, Redirect} = ReactRouterDOM
 
 const Companies = ({companies, offerings, products}) => {
     return (
@@ -28,21 +30,54 @@ const Companies = ({companies, offerings, products}) => {
                 <li>
                     <h2>{company.name}</h2>
                     <p>{company.catchPhrase}</p>
-                    <p>Offerings:<ul>{
-                        offerings
-                        .filter(offering =>(offering.companyId === company.id))
-                        .map(offering =>
-                            <li> {products.find(product => (offering.productId === product.id)).name} {offering.price}
-                            </li>
-                            )
-                    }</ul></p>
+                    <p>Offerings:
+                        <ul>
+                            {
+                                offerings
+                                .filter(offering =>(offering.companyId === company.id))
+                                .map(offering =>
+                                    <li>
+                                        {products.find(product => (offering.productId === product.id)).name} ${offering.price.toFixed(2)}
+                                    </li>
+                                )
+                            }
+                        </ul>
+                    </p>
                 </li>
                 )
             }
         </ul>
     );
 };
-const Products = () => <div>Products</div>;
+
+const Products = ({companies, offerings, products}) => {
+    return (
+        <ul>
+            {
+                products.map(product =>
+                    <li>
+                        <h2>{product.name}</h2>
+                        <p>${product.suggestedPrice.toFixed(2)}</p>
+                        <p>{product.description}</p>
+                        <p>Offered By:
+                            <ul>
+                                {
+                                    offerings
+                                    .filter(offering => product.id === offering.productId)
+                                    .map(offering =>
+                                        <li>
+                                            {companies.find(company => company.id === offering.companyId).name}
+                                        </li>
+                                    )
+                                }
+                            </ul>
+                        </p>
+                    </li>
+                )
+            }
+        </ul>
+    );
+};
 
 class App extends Component {
     constructor() {
@@ -78,12 +113,13 @@ class App extends Component {
         return(
             <HashRouter>
                 <nav>
-                    <Link to ='/companies'>Companies ({companies.length})</Link>
-                    <Link to ='/products'>Products ({products.length})</Link>
+                    <h1>ACME OFFERINGS * REACT</h1>
+                    <NavLink to ='/companies' activeClassName="selected">Companies ({companies.length})</NavLink>
+                    <NavLink to ='/products' activeClassName="selected">Products ({products.length})</NavLink>
                 </nav>
                 <Switch>
-                    <Route path="/companies" render={ () => <Companies companies={companies} offerings={offerings} products={products}/> } />
-                    <Route path="/products" component={ Products } />
+                    <Route path="/companies" render={ () => <Companies companies={companies} offerings={offerings} products={products} /> } />
+                    <Route path="/products" render={ () => <Products companies={companies} offerings={offerings} products={products} /> } />
                     <Redirect to="/companies" />
                 </Switch>
             </HashRouter>
